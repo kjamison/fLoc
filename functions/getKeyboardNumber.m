@@ -6,7 +6,9 @@ function k = getKeyboardNumber
 % Edited by AS 8/2014
 
 % change to productID number of native keyboard
-keyboardID = 594;
+%keyboardID = 594;
+%keyboardID = 610;
+keyboardID = 544;
 
 k = 0;
 d = PsychHID('Devices');

@@ -94,7 +94,7 @@ end
 fclose(fid);
 
 % write parfile
-outFile = [script '_' date '.par'];
+outFile = [script '.par'];
 fidout = fopen(outFile,'w');
 for n=1:nblocks
     fprintf(fidout,'%d \t %d \t', par.onset(n), par.cond(n));

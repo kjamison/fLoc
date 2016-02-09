@@ -1,11 +1,20 @@
-function [keys RT] = recordKeys(startTime,duration,deviceNumber)
+function [keys RT] = recordKeys(startTime,duration,deviceNumber,ignorekeys)
 % Collects all keypresses for a given duration (in secs).
 % Written by KGS Lab
 % Edited by AS 8/2014
+% Update KJ 12/2015 to include ignorekeys
 
 keys = [];
 RT = [];
 rcStart = GetSecs;
+
+if(~exist('ignorekeys','var'))
+    ignorekeys=[];
+else
+    if(ischar(ignorekeys) || iscell(ignorekeys))
+        ignorekeys=KbName(ignorekeys);
+    end
+end
 
 % wait until keys are released
 while KbCheck(deviceNumber)
@@ -18,6 +27,9 @@ end
 while 1
     [keyIsDown,secs,keyCode] = KbCheck(deviceNumber);
     if keyIsDown
+        if(~isempty(ignorekeys))
+            keyCode(ignorekeys)=false;
+        end
         keys = [keys KbName(keyCode)];
         RT = [RT GetSecs-rcStart];
         while KbCheck(deviceNumber)

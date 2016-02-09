@@ -35,10 +35,15 @@ function runme(nruns,startRun)
 % Version 2.0 8/2015
 % Anthony Stigliani (astiglia@stanford.edu)
 % Department of Psychology, Stanford University
+%
+% Update KJ 12/2015: 
+%   Add timestamps for filenames
+%   fix file moving issues
+%   Remove prompt for triggering scanner
 
 %% SET DEFUALTS
 if ~exist('nruns','var')
-    nruns = 3;
+    nruns = 1;
 end
 if ~exist('startRun','var')
     startRun = 1;
@@ -46,6 +51,8 @@ end
 if startRun > nruns
     error('startRun cannot be greater than nruns')
 end
+
+timestamp=datestr(now,'yyyymmdd-HHMMSS');
 
 %% SET PATHS
 path.baseDir = pwd; addpath(path.baseDir);
@@ -66,24 +73,26 @@ subject.script = {};
 subject.name = input('Subject initials : ','s');
 subject.name = deblank(subject.name);
 subject.date = date;
+subject.timestamp = timestamp;
 while ~ismember(subject.task,[1 2 3])
     subject.task = input('Task (1 = 1-back, 2 = 2-back, 3 = oddball) : ');
 end
-while ~ismember(subject.scanner,[0 1])
-    subject.scanner = input('Trigger scanner? (0 = no, 1 = yes) : ');
-end
+subject.scanner=1;
+%while ~ismember(subject.scanner,[0 1])
+%    subject.scanner = input('Wait for scanner trigger? (0 = no, 1 = yes) : ');
+%end
 
 %% GENERATE STIMULUS SEQUENCES
 if startRun == 1
     % create subject script directory
     cd(path.scriptDir);
-    makeorder_fLoc(nruns,subject.task);
-    subScriptDir = [subject.name '_' subject.date '_' subject.experiment];
-    mkdir(subScriptDir);
+    makeorder_fLoc(nruns,subject.task,subject.timestamp);
+    subScriptDir = [subject.name '_' subject.timestamp '_' subject.experiment];
+    [~,~]=mkdir(subScriptDir);
     % create subject data directory
     cd(path.dataDir);
-    subDataDir = [subject.name '_' subject.date '_' subject.experiment];
-    mkdir(subDataDir);
+    subDataDir = [subject.name '_' subject.timestamp '_' subject.experiment];
+    [~,~]=mkdir(subDataDir);
     % prepare to exectue experiment
     cd(path.baseDir);
     sprintf(['\n' num2str(nruns) ' runs will be exectued.\n']);
@@ -93,23 +102,22 @@ tasks = {'1back' '2back' 'oddball'};
 %% EXECUTE EXPERIMENTS AND SAVE DATA FOR EACH RUN
 for r = startRun:nruns
     % execute this run of experiment
-    subject.script = ['script_' subject.experiment '_' tasks{subject.task} '_run' num2str(r)];
+    subject.script = ['script_' subject.experiment '_' tasks{subject.task} '_run' num2str(r) '_' subject.timestamp];
     sprintf(['\nRun ' num2str(r) '\n']);
     WaitSecs(1);
     [theSubject theData] = et_run_fLoc(path,subject);
     % save data for this run
     cd(path.dataDir); cd(subDataDir);
-    saveName = [theSubject.name '_' theSubject.date '_' theSubject.experiment '_' tasks{subject.task} '_run' num2str(r)];
+    saveName = [theSubject.name '_' theSubject.timestamp '_' theSubject.experiment '_' tasks{subject.task} '_run' num2str(r)];
     save(saveName,'theData','theSubject')
     cd(path.baseDir);
 end
 
 %% BACKUP SCRIPT AND PARAMTER FILES FOR THIS SESSION
+cd(path.scriptDir);
 for r = 1:nruns
-    cd(path.scriptDir);
-    movefile(['script_' subject.experiment '_' tasks{subject.task} '_run' num2str(r)],subScriptDir);
-    cd(path.dataDir);
-    movefile(['script_' subject.experiment '_' tasks{subject.task} '_run' num2str(r) '_' subject.date '.par'],subScriptDir);
+    movefile(['script_' subject.experiment '_' tasks{subject.task} '_run' num2str(r) '_' subject.timestamp],subScriptDir);
+    movefile(['script_' subject.experiment '_' tasks{subject.task} '_run' num2str(r) '_' subject.timestamp '.par'],subScriptDir);
 end
 cd(path.baseDir);
 

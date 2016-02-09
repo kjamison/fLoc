@@ -1,4 +1,4 @@
-function stimseq = makeorder_fLoc(nruns,task)
+function stimseq = makeorder_fLoc(nruns,task,timestamp)
 % Generates stimulus sequences, scripts, and parfiles for specified number
 % of functional localizer runs.
 % 
@@ -118,7 +118,7 @@ header5 = 'Block      Onset     Category      TaskMatch     Image';
 footer = '*** END SCRIPT ***';
 % write separate script file for each run
 for r = 1:nruns
-    fid = fopen(strcat('script_fLoc_',tasks{task},'_run',num2str(r)),'w');
+    fid = fopen(strcat('script_fLoc_',tasks{task},'_run',num2str(r),'_',timestamp),'w');
     fprintf(fid,'%s\n',header1);
     fprintf(fid,'%s\n',header2);
     fprintf(fid,'%s\n\n',header3);
@@ -137,7 +137,7 @@ for r = 1:nruns
 end
 % write separate parfile for each run
 for r = 1:nruns
-    writeParfile_fLoc(strcat('script_fLoc_',tasks{task},'_run',num2str(r)),TR,stimperblock,stimdur);
+    writeParfile_fLoc(strcat('script_fLoc_',tasks{task},'_run',num2str(r),'_',timestamp),TR,stimperblock,stimdur);
 end
 
 end

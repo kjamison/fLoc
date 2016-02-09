@@ -2,23 +2,31 @@ function [theSubject theData] = et_run_fLoc(path,subject)
 % Displays images for functional localizer experiment and collects
 % behavioral data for 2-back image repetition detection task.
 % AS 8/2014
+%
+% KJ 12/2015:
+%   - Wait for scanner to send trigger, instead of code triggering scanner
+%   - Add ignorekeys so scanner triggers aren't counted as responses
+%   - Other changes to keyboard handling for CMRR setup
 
 %% CHANGEABLE PARAMETERS
+
 countDown = 12; % pre-experiment countdown (secs)
-stimSize = 768; % size to display images in pixels
+
+stimSize = 700; % size to display images in pixels
 fixColor = [255 0 0]; % fixation marker color
 textColor = 255; % instruction text color (grayscale)
 blankColor = 128; % baseline screen color (grayscale)
 waitDur = 1; % secs to wait for response (must be < 2 and a multiple of .5)
 
+startKey = '5%';
+startKeyName= '5'; %for display only
+
+ignorekeys=KbName({startKey}); % dont record TR triggers as subject responses
 %% FIND RESPONSE DEVICE
-laptopKey = getKeyboardNumber;
-buttonKey = getBoxNumber;
-if subject.scanner == 1 && buttonKey ~= 0
-    k = buttonKey;
-else
-    k = laptopKey;
-end
+
+%KJ: Just listen to all keyboards/boxes
+laptopKey=-3;
+k=-3;
 
 %% SET UP SCREEN AND PRELOAD STIMULI
 % read trial information stimulus sequence script
@@ -61,33 +69,23 @@ data.rt = [];
 
 %% DISPLAY INSTRUCTIONS AND START EXPERIMENT
 % instructions for 1-back task
-str{1} = 'Fixate. Press a button when an image repeats on sequential trials.\nPress g to continue.';
+str{1} = sprintf('Fixate. Press a button when an image repeats on sequential trials.\nPress %s to continue.', startKeyName);
 % instructions for 2-back task
-str{2} = 'Fixate. Press a button when an image repeats within a block.\nPress g to continue.';
+str{2} = sprintf('Fixate. Press a button when an image repeats within a block.\nPress %s to continue.', startKeyName);
 % instructions for oddball task
-str{3} = 'Fixate. Press a button when a scrambled image appears.\nPress g to continue.';
+str{3} = sprintf('Fixate. Press a button when a scrambled image appears.\nPress %s to continue.', startKeyName);
 % display instruction screen
 WaitSecs(1);
 Screen('FillRect',windowPtr,blankColor);
 Screen('Flip',windowPtr);
 DrawFormattedText(windowPtr,str{subject.task},'center','center',textColor);
 Screen('Flip',windowPtr);
-% start experiment and trigger scanner
-if subject.scanner == 0
-    getKey('g',laptopKey);
-elseif subject.scanner == 1
-    while 1
-        getKey('g',laptopKey);
-        [status,time0] = newStartScan;
-        if status == 0
-            break
-        else
-            message = 'Trigger failed.';
-            DrawFormattedText(windowPtr,message,'center','center',fixColor);
-            Screen('Flip',windowPtr);
-        end
-    end
-end
+
+
+
+
+% wait for TR trigger to start experiment
+getKey(startKey,k);
 
 %% PRE-EXPERIMENT COUNTDOWN
 % display countdown numbers
@@ -123,7 +121,7 @@ for t = 1:numTrials
     % collect response and measure timing
     trialEnd = GetSecs-startTime;
     subject.timePerTrial(t) = trialEnd;
-    [keys RT] = recordKeys(trialStart,viewTime,k);
+    [keys RT] = recordKeys(trialStart,viewTime,k,ignorekeys);
     data.keys{t} = keys;
     data.rt(t) = min(RT);
 end
@@ -143,7 +141,7 @@ Screen('Flip',windowPtr);
 DrawFormattedText(windowPtr,[hitStr '\n' faStr '\n\nPress g to continue'],'center','center',textColor);
 Screen('Flip',windowPtr);
 % wait until g is pressed
-getKey('g',laptopKey);
+%getKey('g',laptopKey);
 % show cursor and clear screen
 ShowCursor;
 Screen('CloseAll');
