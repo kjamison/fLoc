@@ -7,6 +7,9 @@ function [theSubject theData] = et_run_fLoc(path,subject)
 %   - Wait for scanner to send trigger, instead of code triggering scanner
 %   - Add ignorekeys so scanner triggers aren't counted as responses
 %   - Other changes to keyboard handling for CMRR setup
+%
+% KJ 2/2016:
+%   - Fix cumulative timing bug   
 
 %% CHANGEABLE PARAMETERS
 
@@ -121,7 +124,8 @@ for t = 1:numTrials
     % collect response and measure timing
     trialEnd = GetSecs-startTime;
     subject.timePerTrial(t) = trialEnd;
-    [keys RT] = recordKeys(trialStart,viewTime,k,ignorekeys);
+    %[keys RT] = recordKeys(trialStart,viewTime,k,ignorekeys);
+    [keys RT] = recordKeys(startTime+(t-1)*viewTime,viewTime,k,ignorekeys); %KJ lag fix
     data.keys{t} = keys;
     data.rt(t) = min(RT);
 end
