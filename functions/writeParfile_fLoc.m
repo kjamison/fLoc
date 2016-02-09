@@ -1,30 +1,33 @@
 function writeParfile_fLoc(script,TR,stimperblock,stimdur)
 % Reads information from a script file and writes a parameter file.
 % AS 8/2014
+% KJ 2/2016: make text parsing more robust
 
 % get category names
 fid = fopen(script);
 ignore = fscanf(fid,'%s',1);
 cat0 = 'baseline';
-for c = 1:9
-    name = fscanf(fid,'%s',1);
-    catnames{c} = name(1:end-1);
-end
-ignore = fscanf(fid,'%s',1);
-catnames{c+1} = fscanf(fid,'%s',1);
+s=fgetl(fid);
+s=regexp(s,'([\s,]+)|and','split');
+catnames=s(~cellfun(@isempty,s));
 
 % get number of frames and duration
-ignore = fscanf(fid,'%s',11);
-par.numTR = fscanf(fid,'%i',1);
+s=fgetl(fid);
+s=regexp(s,':','split');
+par.numTR=str2num(s{end});
 duration = par.numTR*TR;
 nblocks = duration/(stimperblock*stimdur);
 ntrials = nblocks*stimperblock;
-ignore = fscanf(fid,'%s',14);
+
+for i = 1:4
+    ignore=fgetl(fid); 
+end
 
 % read in trial information
+temp=[];
 cnt = 1;
 blocknum = fscanf(fid,'%s',1);
-while ~isempty(blocknum) & strncmp('*',blocknum,1) == 0
+while ~isempty(blocknum) && strncmp('*',blocknum,1) == 0
     temp.block(cnt) = str2num(blocknum);
     temp.onset(cnt) = fscanf(fid,'%f',1);
     temp.cond(cnt) = fscanf(fid,'%d',1);
@@ -99,7 +102,7 @@ fidout = fopen(outFile,'w');
 for n=1:nblocks
     fprintf(fidout,'%d \t %d \t', par.onset(n), par.cond(n));
     fprintf(fidout,'%s \t', par.cat{n});
-    fprintf(fidout,'%i %i %i \n', par.color{n});
+    fprintf(fidout,'%g %g %g \n', par.color{n});
 end
 fclose(fidout);
 fclose('all');

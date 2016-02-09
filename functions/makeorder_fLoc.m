@@ -1,9 +1,13 @@
-function stimseq = makeorder_fLoc(nruns,task,timestamp)
+function stimseq = makeorder_fLoc(nruns,categories,task,timestamp)
 % Generates stimulus sequences, scripts, and parfiles for specified number
 % of functional localizer runs.
 % 
 % INPUTS
 % nruns: number of counterbalanced stimulus sequences to generate
+% categories: subset of available categories to display.  If [], use all
+%               Note: must provide complete pairs 
+%               eg: {'word','number'}
+%               eg: {'word','number','adult','child'}
 % task: 1 (1-back), 2 (2-back), or 3 (oddball detection)
 % 
 % OUTPUTS
@@ -11,6 +15,8 @@ function stimseq = makeorder_fLoc(nruns,task,timestamp)
 % Sperarate script files for each run of the experiment
 % 
 % AS 8/2015
+% KJ 2/2016 Updated to allow subsets of categories and more robust
+%           handling of different parameter choices
 
 %% EXPERIMENTAL PARAMETERS
 % scanner and task parameters (modifiable)
@@ -22,8 +28,18 @@ cats = {'word' 'number'; ...
     'adult' 'child'; ...
     'corridor' 'house'; ...
     'car' 'instrument'}';
-ncats = numel(cats); % number of stimulus categories
-nconds = length(cats)+1; % number of conditions including baseline
+if(isempty(categories))
+    usecats=1:numel(cats);
+else
+    if(mod(numel(categories),2))
+        error('Must provide categories in condition pairs (eg: {''word'',''number''} )');
+    end
+    usecats=find(ismember(cats,categories));
+end
+usecats=reshape(usecats,2,[]);
+
+ncats = numel(usecats); % number of stimulus categories
+nconds = size(usecats,2)+1; % number of conditions including baseline
 tasks = {'1back' '2back' 'oddball'}; % task names
 % presentation and design parameters (do not change)
 norders = 2; % number of counterbalanced condition orders per run
@@ -37,7 +53,7 @@ if rem(stimperblock*stimdur,TR)
     TR = stimperblock*stimdur;
 end
 % balance frequency of stimulus repetition or oddballs across image sets
-repfreq = round(repfreq*norders*nconds/2)/(norders*nconds/2);
+repfreq = max(1,round(repfreq*norders*nconds/2))/(norders*nconds/2);
 
 %% GENERATE STIMULUS SEQUENCES
 % initialzie stimulus sequence data structure
@@ -47,12 +63,12 @@ stimseq.cond = [];
 stimseq.task = [];
 stimseq.img = {};
 % randomize order of stimulus numbers for each category
-for c = 1:ncats
+for c = 1:numel(cats)
     for r = 1:ceil(nruns/3)
         stimnums(nstim*(r-1)+1:nstim*(r-1)+nstim,c) = shuffle(1:nstim);
     end
 end
-catcnt = zeros(c,1);
+catcnt = zeros(numel(cats),1);
 % create stimulus sequence data structure
 for r = 1:nruns
     % order of conditions with baseline padding blocks
@@ -62,6 +78,8 @@ for r = 1:nruns
         ind = find(condorder==c);
         condorder(ind(2:2:end)) = condorder(ind(2:2:end))-1;
     end
+    condorder(condorder>0)=usecats(condorder(condorder>0));
+    
     % psuedorandomly select blocks for task
     repblocks = zeros(length(condorder),1);
     for c = 1:ncats
@@ -84,25 +102,26 @@ for r = 1:nruns
     for b = 1:nblocks
         if repblocks(b) == 1
             if task == 2
-                repimg = randi(4)+3;
+                repimg = randi(stimperblock-4)+3;
                 taskmatch(repimg,b) = 1;
                 imgmat(repimg,b) = imgmat(repimg-2,b);
             elseif task == 3
-                repimg = randi(6)+1;
+                repimg = randi(stimperblock-2)+1;
                 taskmatch(repimg,b) = 1;
                 imgmat(repimg,b) = {strcat('scrambled-',num2str(randi(144)),'.jpg')};
             else
-                repimg = randi(5)+2;
+                repimg = randi(stimperblock-3)+2;
                 taskmatch(repimg,b) = 1;
                 imgmat(repimg,b) = imgmat(repimg-1,b);
             end
         else
         end
     end
+    
     % fill in data structure
     stimseq(r).block = reshape(repmat(1:nblocks,stimperblock,1),[],1);
     stimseq(r).onset = 0:stimdur:ntrials*stimdur-stimdur;
-    stimseq(r).cond = reshape(repmat(condorder',8,1),[],1);
+    stimseq(r).cond = reshape(repmat(condorder',stimperblock,1),[],1);
     stimseq(r).task = reshape(taskmatch,[],1);
     stimseq(r).img = reshape(imgmat,[],1);
 end
@@ -118,7 +137,7 @@ header5 = 'Block      Onset     Category      TaskMatch     Image';
 footer = '*** END SCRIPT ***';
 % write separate script file for each run
 for r = 1:nruns
-    fid = fopen(strcat('script_fLoc_',tasks{task},'_run',num2str(r),'_',timestamp),'w');
+    fid = fopen(strcat('script_fLoc_',tasks{task},'_run',num2str(r),'_',timestamp)scasca,'w');
     fprintf(fid,'%s\n',header1);
     fprintf(fid,'%s\n',header2);
     fprintf(fid,'%s\n\n',header3);

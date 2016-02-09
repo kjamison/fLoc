@@ -40,6 +40,8 @@ function runme(nruns,startRun)
 %   Add timestamps for filenames
 %   fix file moving issues
 %   Remove prompt for triggering scanner
+%
+% Update KJ 2/2016: Handle subsets of categories
 
 %% SET DEFUALTS
 if ~exist('nruns','var')
@@ -69,6 +71,7 @@ subject.experiment = 'fLoc';
 subject.task = -1;
 subject.scanner = -1;
 subject.script = {};
+subject.categories = {};
 % collect subject info and experimental parameters
 subject.name = input('Subject initials : ','s');
 subject.name = deblank(subject.name);
@@ -86,7 +89,7 @@ subject.scanner=1;
 if startRun == 1
     % create subject script directory
     cd(path.scriptDir);
-    makeorder_fLoc(nruns,subject.task,subject.timestamp);
+    makeorder_fLoc(nruns,subject.categories,subject.task,subject.timestamp);
     subScriptDir = [subject.name '_' subject.timestamp '_' subject.experiment];
     [~,~]=mkdir(subScriptDir);
     % create subject data directory
