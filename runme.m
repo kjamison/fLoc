@@ -41,11 +41,11 @@ function runme(nruns,startRun)
 %   fix file moving issues
 %   Remove prompt for triggering scanner
 %
-% Update KJ 2/2016: Handle subsets of categories
+% Update KJ 2/2016: Fix timing bug, Handle subsets of categories
 
 %% SET DEFUALTS
 if ~exist('nruns','var')
-    nruns = 1;
+    nruns = 4;
 end
 if ~exist('startRun','var')
     startRun = 1;

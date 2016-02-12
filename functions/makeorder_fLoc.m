@@ -137,7 +137,7 @@ header5 = 'Block      Onset     Category      TaskMatch     Image';
 footer = '*** END SCRIPT ***';
 % write separate script file for each run
 for r = 1:nruns
-    fid = fopen(strcat('script_fLoc_',tasks{task},'_run',num2str(r),'_',timestamp)scasca,'w');
+    fid = fopen(strcat('script_fLoc_',tasks{task},'_run',num2str(r),'_',timestamp),'w');
     fprintf(fid,'%s\n',header1);
     fprintf(fid,'%s\n',header2);
     fprintf(fid,'%s\n\n',header3);
