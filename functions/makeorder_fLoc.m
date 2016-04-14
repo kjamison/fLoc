@@ -17,6 +17,9 @@ function stimseq = makeorder_fLoc(nruns,categories,task,timestamp)
 % AS 8/2015
 % KJ 2/2016 Updated to allow subsets of categories and more robust
 %           handling of different parameter choices
+% KJ 4/13/2016 ACTUALLY allow subsets of categories, and allow specifying
+%           repeating categories 
+%           (ie: input categories={'adult','adult','adult','instrument'};
 
 %% EXPERIMENTAL PARAMETERS
 % scanner and task parameters (modifiable)
@@ -85,22 +88,23 @@ for r = 1:nruns
         ind = find(condorder==c);
         condorder(ind(2:2:end)) = condorder(ind(2:2:end))-1;
     end
-    %condorder(condorder>0)=usecats(condorder(condorder>0))
+    blockorder=condorder;
+    condorder(condorder>0)=usecats(condorder(condorder>0));
     
-    % psuedorandomly select blocks for task
-    repblocks = zeros(length(condorder),1);
+    % pseudorandomly select blocks for task
+    repblocks = zeros(length(blockorder),1);
     for c = 1:ncats
-        ind = shuffle(find(condorder==c));
+        ind = shuffle(find(blockorder==c));
         repblocks(ind(1:round(1/repfreq):end)) = 1;
     end
     % generate image sequence without repetitions or oddballs
     for b = 1:nblocks
-        if condorder(b) == 0
+        if blockorder(b) == 0
             imgmat(1:stimperblock,b) = {'blank'};
         else
             for i = 1:stimperblock
-                catcnt(condorder(b)) = catcnt(condorder(b))+1;
-                imgmat{i,b} = strcat(categories{condorder(b)},'/',categories{condorder(b)},'-',num2str(stimnums(catcnt(condorder(b)),condorder(b))),'.jpg');
+                catcnt(blockorder(b)) = catcnt(blockorder(b))+1;
+                imgmat{i,b} = strcat(cats{condorder(b)},'-',num2str(stimnums(catcnt(blockorder(b)),blockorder(b))),'.jpg');
             end
         end
     end

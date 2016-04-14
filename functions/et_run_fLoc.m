@@ -10,6 +10,8 @@ function [theSubject theData] = et_run_fLoc(path,subject)
 %
 % KJ 2/2016:
 %   - Fix cumulative timing bug   
+% KJ 4/2016:
+%   - Allow 5 or T for scanner trigger input
 
 %% CHANGEABLE PARAMETERS
 
@@ -22,7 +24,7 @@ blankColor = 128; % baseline screen color (grayscale)
 waitDur = 1; % secs to wait for response (must be < 2 and a multiple of .5)
 
 startKey = {'5%','t'};
-startKeyName= '5'; %for display only
+startKeyName= '''5'' or ''t'''; %for display only
 
 ignorekeys=KbName({startKey}); % dont record TR triggers as subject responses
 %% FIND RESPONSE DEVICE
@@ -57,7 +59,7 @@ for t = 1:numTrials
         pic = imread(Trials.img{t});
         picPtrs(t) = Screen('MakeTexture',windowPtr,pic);
     else
-        %cd(catDirs{Trials.cond(t)});
+        cd(catDirs{Trials.cond(t)});
         pic = imread(Trials.img{t});
         picPtrs(t) = Screen('MakeTexture',windowPtr,pic);
     end
@@ -72,11 +74,11 @@ data.rt = [];
 
 %% DISPLAY INSTRUCTIONS AND START EXPERIMENT
 % instructions for 1-back task
-str{1} = sprintf('Fixate. Press a button when an image repeats on sequential trials.\nPress %s to continue.', startKeyName);
+str{1} = sprintf('Fixate. Press a button when an image repeats on sequential trials.\nWaiting for %s from scanner to continue.', startKeyName);
 % instructions for 2-back task
-str{2} = sprintf('Fixate. Press a button when an image repeats within a block.\nPress %s to continue.', startKeyName);
+str{2} = sprintf('Fixate. Press a button when an image repeats within a block.\nWaiting for %s from scanner to continue.', startKeyName);
 % instructions for oddball task
-str{3} = sprintf('Fixate. Press a button when a scrambled image appears.\nPress %s to continue.', startKeyName);
+str{3} = sprintf('Fixate. Press a button when a scrambled image appears.\nWaiting for %s from scanner to continue.', startKeyName);
 % display instruction screen
 WaitSecs(1);
 Screen('FillRect',windowPtr,blankColor);

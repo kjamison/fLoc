@@ -42,6 +42,7 @@ function runme(nruns,startRun)
 %   Remove prompt for triggering scanner
 %
 % Update KJ 2/2016: Fix timing bug, Handle subsets of categories
+% Update KJ 4/13/2016: ACTUALLY handle subsets of categories
 
 %% SET DEFUALTS
 if ~exist('nruns','var')
@@ -72,7 +73,8 @@ subject.task = -1;
 subject.scanner = -1;
 subject.script = {};
 subject.categories = {}; %all categories
-%subject.categories = {'adult','instrument','adult','instrument','adult','instrument','adult','instrument'};
+%subject.categories = {'adult','instrument','adult','instrument','adult','instrument','adult','instrument','adult','instrument'};
+
 % collect subject info and experimental parameters
 subject.name = input('Subject initials : ','s');
 subject.name = deblank(subject.name);
@@ -115,14 +117,11 @@ for r = startRun:nruns
     saveName = [theSubject.name '_' theSubject.timestamp '_' theSubject.experiment '_' tasks{subject.task} '_run' num2str(r)];
     save(saveName,'theData','theSubject')
     cd(path.baseDir);
+    
+    cd(path.scriptDir);
+    movefile(subject.script,subScriptDir);
+    movefile([subject.script '.par'],subScriptDir);
+    cd(path.baseDir);
 end
-
-%% BACKUP SCRIPT AND PARAMTER FILES FOR THIS SESSION
-cd(path.scriptDir);
-for r = 1:nruns
-    movefile(['script_' subject.experiment '_' tasks{subject.task} '_run' num2str(r) '_' subject.timestamp],subScriptDir);
-    movefile(['script_' subject.experiment '_' tasks{subject.task} '_run' num2str(r) '_' subject.timestamp '.par'],subScriptDir);
-end
-cd(path.baseDir);
 
 end
