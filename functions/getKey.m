@@ -11,7 +11,7 @@ while 1
         end
     end
     pressedKey = KbName(keyCode);
-    if ismember(key,pressedKey)
+    if any(ismember(key,pressedKey))
         break
     end
 end
