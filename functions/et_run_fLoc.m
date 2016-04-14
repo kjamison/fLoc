@@ -21,7 +21,7 @@ textColor = 255; % instruction text color (grayscale)
 blankColor = 128; % baseline screen color (grayscale)
 waitDur = 1; % secs to wait for response (must be < 2 and a multiple of .5)
 
-startKey = '5%';
+startKey = {'5%','t'};
 startKeyName= '5'; %for display only
 
 ignorekeys=KbName({startKey}); % dont record TR triggers as subject responses
@@ -57,7 +57,7 @@ for t = 1:numTrials
         pic = imread(Trials.img{t});
         picPtrs(t) = Screen('MakeTexture',windowPtr,pic);
     else
-        cd(catDirs{Trials.cond(t)});
+        %cd(catDirs{Trials.cond(t)});
         pic = imread(Trials.img{t});
         picPtrs(t) = Screen('MakeTexture',windowPtr,pic);
     end

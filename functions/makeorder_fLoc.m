@@ -29,12 +29,17 @@ cats = {'word' 'number'; ...
     'corridor' 'house'; ...
     'car' 'instrument'}';
 if(isempty(categories))
+    categories=cats;
     usecats=1:numel(cats);
 else
     if(mod(numel(categories),2))
         error('Must provide categories in condition pairs (eg: {''word'',''number''} )');
     end
-    usecats=find(ismember(cats,categories));
+    %usecats=find(ismember(cats,categories));
+    usecats=[];
+    for i = 1:numel(categories)
+        usecats(i)=find(ismember(cats,categories{i}));
+    end
 end
 usecats=reshape(usecats,2,[]);
 
@@ -63,22 +68,24 @@ stimseq.cond = [];
 stimseq.task = [];
 stimseq.img = {};
 % randomize order of stimulus numbers for each category
-for c = 1:numel(cats)
+for c = 1:numel(categories)
     for r = 1:ceil(nruns/3)
         stimnums(nstim*(r-1)+1:nstim*(r-1)+nstim,c) = shuffle(1:nstim);
     end
 end
-catcnt = zeros(numel(cats),1);
+
+catcnt = zeros(numel(categories),1);
 % create stimulus sequence data structure
 for r = 1:nruns
     % order of conditions with baseline padding blocks
     condorder = [0; 2*(makeorder(nconds,norders*nconds)-1); 0; 0];
+
     % alternate between subcategories in each condition
     for c = 2:2:ncats
         ind = find(condorder==c);
         condorder(ind(2:2:end)) = condorder(ind(2:2:end))-1;
     end
-    condorder(condorder>0)=usecats(condorder(condorder>0));
+    %condorder(condorder>0)=usecats(condorder(condorder>0))
     
     % psuedorandomly select blocks for task
     repblocks = zeros(length(condorder),1);
@@ -93,7 +100,7 @@ for r = 1:nruns
         else
             for i = 1:stimperblock
                 catcnt(condorder(b)) = catcnt(condorder(b))+1;
-                imgmat{i,b} = strcat(cats{condorder(b)},'-',num2str(stimnums(catcnt(condorder(b)),condorder(b))),'.jpg');
+                imgmat{i,b} = strcat(categories{condorder(b)},'/',categories{condorder(b)},'-',num2str(stimnums(catcnt(condorder(b)),condorder(b))),'.jpg');
             end
         end
     end

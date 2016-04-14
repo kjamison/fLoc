@@ -71,7 +71,8 @@ subject.experiment = 'fLoc';
 subject.task = -1;
 subject.scanner = -1;
 subject.script = {};
-subject.categories = {};
+subject.categories = {}; %all categories
+%subject.categories = {'adult','instrument','adult','instrument','adult','instrument','adult','instrument'};
 % collect subject info and experimental parameters
 subject.name = input('Subject initials : ','s');
 subject.name = deblank(subject.name);
