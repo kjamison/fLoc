@@ -72,8 +72,8 @@ subject.experiment = 'fLoc';
 subject.task = -1;
 subject.scanner = -1;
 subject.script = {};
-subject.categories = {}; %all categories
-%subject.categories = {'adult','instrument','adult','instrument','adult','instrument','adult','instrument','adult','instrument'};
+%subject.categories = {}; %all categories 
+subject.categories = {'adult','instrument','adult','instrument','adult','instrument','adult','instrument','adult','instrument'};
 
 % collect subject info and experimental parameters
 subject.name = input('Subject initials : ','s');
@@ -88,6 +88,17 @@ subject.scanner=1;
 %    subject.scanner = input('Wait for scanner trigger? (0 = no, 1 = yes) : ');
 %end
 
+
+fprintf('\nCategories:\n');
+if(isempty(subject.categories))
+    fprintf('{} (all)\n\n');
+else
+    for i = 1:numel(subject.categories)
+        fprintf('%3d. %s\n',i,subject.categories{i});
+    end
+    fprintf('\n');
+end
+
 %% GENERATE STIMULUS SEQUENCES
 if startRun == 1
     % create subject script directory
@@ -101,7 +112,7 @@ if startRun == 1
     [~,~]=mkdir(subDataDir);
     % prepare to exectue experiment
     cd(path.baseDir);
-    sprintf(['\n' num2str(nruns) ' runs will be exectued.\n']);
+    fprintf(['\n' num2str(nruns) ' runs will be executed.\n']);
 end
 tasks = {'1back' '2back' 'oddball'};
 
@@ -109,7 +120,7 @@ tasks = {'1back' '2back' 'oddball'};
 for r = startRun:nruns
     % execute this run of experiment
     subject.script = ['script_' subject.experiment '_' tasks{subject.task} '_run' num2str(r) '_' subject.timestamp];
-    sprintf(['\nRun ' num2str(r) '\n']);
+    fprintf(['\nRun ' num2str(r) '\n']);
     WaitSecs(1);
     [theSubject theData] = et_run_fLoc(path,subject);
     % save data for this run

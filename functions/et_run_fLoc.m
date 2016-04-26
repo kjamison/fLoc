@@ -68,6 +68,7 @@ cd(path.baseDir);
 % inititalize data structures
 subject.timePerTrial = [];
 subject.totalTime = [];
+subject.countDown = countDown;
 data = [];
 data.keys = {};
 data.rt = [];
