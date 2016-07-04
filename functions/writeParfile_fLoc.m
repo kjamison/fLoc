@@ -50,47 +50,35 @@ for b = 1:length(list)
     matrix = repmat(list(b),1,nframes);
     condition = [condition matrix];
 end
+
+par_colors=[.2 .2 .2; 
+    0 0 0; 
+    0 .8 .8; 
+    0 1 1;
+    .8 0 0;
+    1 0 0;
+    0 .8 0;
+    0 1 0;
+    .8 .8 0;
+    1 1 0];
+
 onsetnum = 0;
 c = 1;
 par.cat = char('');
 for i = 1:nblocks
     par.onset(i) = onsetnum*(stimperblock*stimdur);
     onsetnum = onsetnum+1;
-    switch condition(c)
-        case 0 % fixation
-            par.cat{i} = cat0;
-            par.color{i} = [1 1 1];
-        case 1 % word
-            par.cat{i} = catnames{1};
-            par.color{i} = [.2 .2 .2];
-        case 2 % number
-            par.cat{i} = catnames{2};
-            par.color{i} = [0 0 0];
-        case 3 % body
-            par.cat{i} = catnames{3};
-            par.color{i} = [0 .8 .8];
-        case 4 % limb
-            par.cat{i} = catnames{4};
-            par.color{i} = [0 1 1];
-        case 5 % child
-            par.cat{i} = catnames{5};
-            par.color{i} = [.8 0 0];
-        case 6 % adult
-            par.cat{i} = catnames{6};
-            par.color{i} = [1 0 0];
-        case 7 % place
-            par.cat{i} = catnames{7};
-            par.color{i} = [0 .8 0];
-        case 8 % house
-            par.cat{i} = catnames{8};
-            par.color{i} = [0 1 0];
-        case 9 % car
-            par.cat{i} = catnames{9};
-            par.color{i} = [.8 .8 0];
-        case 10 % instrument
-            par.cat{i} = catnames{10};
-            par.color{i} = [1 1 0];
+    if condition(c) == 0
+        par.cat{i} = cat0;
+        par.color{i} = [1 1 1];
+    elseif condition(c) <= size(par_colors,1)
+        par.cat{i} = catnames{condition(c)};
+        par.color{i} = par_colors(condition(c),:);
+    else
+        par.cat{i} = catnames{condition(c)};
+        par.color{i} = [0 0 0];
     end
+    
     par.cond(i) = condition(c);
     c = c+(stimperblock*stimdur/TR);
 end

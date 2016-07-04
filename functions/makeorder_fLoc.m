@@ -20,6 +20,9 @@ function stimseq = makeorder_fLoc(nruns,categories,task,timestamp)
 % KJ 4/13/2016 ACTUALLY allow subsets of categories, and allow specifying
 %           repeating categories 
 %           (ie: input categories={'adult','adult','adult','instrument'};
+% KJ 7/4/2016
+%   - Add new categories and allow for categories with <144 images ( by
+%   concatenating scrambled copies until we reach 144)
 
 %% EXPERIMENTAL PARAMETERS
 % scanner and task parameters (modifiable)
@@ -31,6 +34,9 @@ cats = {'word' 'number'; ...
     'adult' 'child'; ...
     'corridor' 'house'; ...
     'car' 'instrument'}';
+
+cats_new = [cats'; {'adult_male','adult_female'}]';
+
 if(isempty(categories))
     categories=cats;
     usecats=1:numel(cats);
@@ -41,7 +47,7 @@ else
     %usecats=find(ismember(cats,categories));
     usecats=[];
     for i = 1:numel(categories)
-        usecats(i)=find(ismember(cats,categories{i}));
+        usecats(i)=find(ismember(cats_new,categories{i}));
     end
 end
 usecats=reshape(usecats,2,[]);
@@ -70,10 +76,33 @@ stimseq.onset = [];
 stimseq.cond = [];
 stimseq.task = [];
 stimseq.img = {};
+
+%We need to scan the stimulus directories to count images
+baseDir=fileparts(fileparts(mfilename('fullpath')));
+stimDir=fullfile(baseDir,'stimuli');
+
 % randomize order of stimulus numbers for each category
 for c = 1:numel(categories)
+    
+    %count the number of jpg files in this category
+    nstim_cat=numel(dir(fullfile(stimDir,categories{c},'*.jpg')));
+    
     for r = 1:ceil(nruns/3)
-        stimnums(nstim*(r-1)+1:nstim*(r-1)+nstim,c) = shuffle(1:nstim);
+        %stimnums(nstim*(r-1)+1:nstim*(r-1)+nstim,c) = shuffle(1:nstim);
+        
+        %build full list by adding shuffled lists until we reach the
+        %desired count (144), then trim to 144.  Make sure there are no
+        %sequential duplicates
+        imgorder=shuffle(1:nstim_cat);
+        while numel(imgorder) < nstim
+            tmporder=shuffle(1:nstim_cat);
+            if(imgorder(end)==tmporder(1))
+                tmporder=tmporder([2:end 1]);
+            end
+            imgorder=[imgorder tmporder];
+        end
+
+        stimnums(nstim*(r-1)+1:nstim*(r-1)+nstim,c) = imgorder(1:nstim);
     end
 end
 
@@ -104,7 +133,10 @@ for r = 1:nruns
         else
             for i = 1:stimperblock
                 catcnt(blockorder(b)) = catcnt(blockorder(b))+1;
-                imgmat{i,b} = strcat(cats{condorder(b)},'-',num2str(stimnums(catcnt(blockorder(b)),blockorder(b))),'.jpg');
+                catname=cats_new{condorder(b)};
+                imgnum=stimnums(catcnt(blockorder(b)),blockorder(b));
+                
+                imgmat{i,b} = strcat(catname,'-',num2str(imgnum),'.jpg');
             end
         end
     end
@@ -139,9 +171,16 @@ end
 
 %% WRITE SCRIPT AND PARAMETER FILES
 % header lines
-cnames = strcat(cats(1:end-1),{', '});
+if(all(usecats<=numel(cats)))
+    printcats=cats;
+else
+    printcats=cats_new;
+end
+
+cnames = strcat(printcats(1:end-1),{', '});
 cnames = [cnames{:}];
-header1 = ['fLoc: ' cnames 'and ' cats{end} ' '];
+header1 = ['fLoc: ' cnames 'and ' printcats{end} ' '];
+
 header2 = ['Number of temporal frames per run (given TR = ' num2str(TR) ' secs): ',num2str(nblocks*stimperblock*stimdur/TR),' '];
 header3 = ['Total # of runs: ',num2str(nruns),' '];
 header5 = 'Block      Onset     Category      TaskMatch     Image';

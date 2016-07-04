@@ -12,16 +12,23 @@ function [theSubject theData] = et_run_fLoc(path,subject)
 %   - Fix cumulative timing bug   
 % KJ 4/2016:
 %   - Allow 5 or T for scanner trigger input
+% KJ 7/2016:
+%   - Add stimulus position offset param
+%   - Un-hardcode category names; read them from script file instead
 
 %% CHANGEABLE PARAMETERS
 
 countDown = 12; % pre-experiment countdown (secs)
 
-stimSize = 700; % size to display images in pixels
+%stimSize = 700; % size to display images in pixels
+stimSize = 912;
 fixColor = [255 0 0]; % fixation marker color
 textColor = 255; % instruction text color (grayscale)
 blankColor = 128; % baseline screen color (grayscale)
 waitDur = 1; % secs to wait for response (must be < 2 and a multiple of .5)
+
+centerOffset=[0 0]; %shift center of stimulus on screen (in pixels)
+%centerOffset=[0 -50]; 
 
 startKey = {'5%','t'};
 startKeyName= '''5'' or ''t'''; %for display only
@@ -43,13 +50,17 @@ viewTime = Trials.onset(2);
 cd(path.baseDir);
 % initalize screen
 [windowPtr,center,blankColor] = doScreen;
+
+center=center+centerOffset;
+
 centerX = center(1);
 centerY = center(2);
+
 s = stimSize/2;
 stimRect = [centerX-s centerY-s centerX+s centerY+s];
 % store image textures in array of pointers
 picPtrs = [];
-catDirs = {'word' 'number' 'body' 'limb' 'adult' 'child' 'corridor' 'house' 'car' 'instrument'};
+
 for t = 1:numTrials
     cd(path.stimDir);
     if strcmp(Trials.img{t},'blank')
@@ -59,7 +70,7 @@ for t = 1:numTrials
         pic = imread(Trials.img{t});
         picPtrs(t) = Screen('MakeTexture',windowPtr,pic);
     else
-        cd(catDirs{Trials.cond(t)});
+        cd(Trials.condname{t});
         pic = imread(Trials.img{t});
         picPtrs(t) = Screen('MakeTexture',windowPtr,pic);
     end
@@ -89,6 +100,7 @@ Screen('Flip',windowPtr);
 
 
 
+fprintf('\nWaiting for %s from scanner to continue.\n', startKeyName);
 
 % wait for TR trigger to start experiment
 getKey(startKey,k);

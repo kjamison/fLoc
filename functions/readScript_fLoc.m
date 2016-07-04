@@ -13,9 +13,14 @@ Trials.img = {};
 
 % open script file
 fid = fopen(script);
+ignore = fscanf(fid,'%s',1);
+cat0 = 'baseline';
+s=fgetl(fid);
+s=regexp(s,'([\s,]+)|and','split');
+catnames=s(~cellfun(@isempty,s));
 
 % skip header lines
-for l = 1:6
+for l = 2:6
     skipText = fgetl(fid);
 end
 
@@ -28,6 +33,11 @@ while ~isempty(blocknum) && strncmp('*',blocknum,1) == 0
     Trials.cond(cnt) = fscanf(fid,'%d',1);
     Trials.task(cnt) = fscanf(fid,'%i',1);
     Trials.img{cnt} = fscanf(fid,'%s',1);
+    if(Trials.cond(cnt)==0)
+        Trials.condname{cnt} = cat0;
+    else
+        Trials.condname{cnt} = catnames{Trials.cond(cnt)};
+    end
     skipLine = fgetl(fid);
     cnt = cnt+1;
     blocknum = fscanf(fid,'%s',1);
