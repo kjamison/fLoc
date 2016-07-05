@@ -43,6 +43,7 @@ function runme(nruns,startRun)
 %
 % Update KJ 2/2016: Fix timing bug, Handle subsets of categories
 % Update KJ 4/13/2016: ACTUALLY handle subsets of categories
+% Update KJ 7/2016: Add example category option for male/female blocks
 
 %% SET DEFUALTS
 if ~exist('nruns','var')
@@ -73,6 +74,9 @@ subject.task = -1;
 subject.scanner = -1;
 subject.script = {};
 subject.categories = {}; %all categories
+
+
+subject.categories = {'adult_male','adult_female','adult_male','adult_female','adult_male','adult_female','adult_male','adult_female','adult_male','adult_female'};
 %subject.categories = {'adult','instrument','adult','instrument','adult','instrument','adult','instrument','adult','instrument'};
 
 % collect subject info and experimental parameters

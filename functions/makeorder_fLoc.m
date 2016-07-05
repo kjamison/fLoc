@@ -62,6 +62,8 @@ stimdur = .5; % stimulus presentation duration (secs)
 nblocks = 3+norders*nconds^2; % number of blocks per run including padding
 ntrials = nblocks*stimperblock; % number of trials
 nstim = 144; % number of stimuli per subcategory
+dupemin=5; % duplicate images will be at least this far apart (for categories with fewer than 144 images)
+
 % force TR to be a factor of block duration
 if rem(stimperblock*stimdur,TR)
     TR = stimperblock*stimdur;
@@ -92,13 +94,14 @@ for c = 1:numel(categories)
         
         %build full list by adding shuffled lists until we reach the
         %desired count (144), then trim to 144.  Make sure there are no
-        %sequential duplicates
+        %duplicates within previous /dupemin/ images
         imgorder=shuffle(1:nstim_cat);
         while numel(imgorder) < nstim
             tmporder=shuffle(1:nstim_cat);
-            if(imgorder(end)==tmporder(1))
-                tmporder=tmporder([2:end 1]);
-            end
+            previmg=imgorder(end-dupemin+1:end);
+            startimg=setdiff(tmporder,previmg,'stable');
+            startimg=startimg(1:dupemin);
+            tmporder=[startimg setdiff(tmporder,startimg,'stable')];
             imgorder=[imgorder tmporder];
         end
 

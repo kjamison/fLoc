@@ -21,7 +21,8 @@ function [theSubject theData] = et_run_fLoc(path,subject)
 countDown = 12; % pre-experiment countdown (secs)
 
 %stimSize = 700; % size to display images in pixels
-stimSize = 912;
+stimSize = 912; %10 deg side length on 7TPS BOLDscreen
+
 fixColor = [255 0 0]; % fixation marker color
 textColor = 255; % instruction text color (grayscale)
 blankColor = 128; % baseline screen color (grayscale)
